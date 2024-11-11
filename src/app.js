@@ -2,17 +2,11 @@ const express = require("express");
 
 const app = express();
 
-app.use("/test",(req,res)=>{
-    res.send("Hello from the server to the test page");
-})
-
-app.use("/hello",(req,res)=>{
-    res.send("Namaste from the server to hello page");
-})
-
-app.use("/",(req,res)=>{
-    res.send("Hello from the serve to home page");
-})
+app.get("/user/:userId",(req,res)=>{
+    console.log(req.query);
+    console.log(req.params);
+    res.send({firstName:"Subrata",lastName:"Saha"});
+});
 
 app.listen(7777,()=>{
     console.log("Serever is successfully listening on port 7777...");
