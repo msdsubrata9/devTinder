@@ -22,6 +22,11 @@ app.post("/user/login",(req,res,next)=>{
     res.send("User loggedin Successfully");
 })
 
+app.use("/",(err,req,res,next)=>{
+    if(err){
+        res.status(500).send("Something went wrong");
+    }
+})
 app.listen(7777,()=>{
     console.log("Serever is successfully listening on port 7777...");
 })
