@@ -1,32 +1,31 @@
 const express = require("express");
-
+const connectDB = require("./config/database");
 const app = express();
+const User  = require("./models/user");
 
-const {adminAuthrization, userAuthrization} = require("./middlewares/auth");
+app.post("/signup", async (req, res, next) => {
+  const user = new User({
+    firstName: "Subrata",
+    lastName: "Saha",
+    emailId: "subrata.saha@gmail.com",
+    password: "Subrata@1808",
+  });
 
-app.use("/admin",adminAuthrization);
+  try{
+    await user.save();
+    res.send("User added successfully");
+  } catch(err){
+    res.status(400).send("Error saving the user"+err.message);
+  }
+});
 
-app.get("/admin/getAllData",(req,res,next)=>{
-    res.send("Sending all the data to the Admin");
-})
-
-app.get("/admin/deleteUser",(req,res,next)=>{
-    res.send("delete the user data");
-})
-
-app.get("/user", userAuthrization,(req,res,next)=>{
-    res.send("User data Sent");
-})
-
-app.post("/user/login",(req,res,next)=>{
-    res.send("User loggedin Successfully");
-})
-
-app.use("/",(err,req,res,next)=>{
-    if(err){
-        res.status(500).send("Something went wrong");
-    }
-})
-app.listen(7777,()=>{
-    console.log("Serever is successfully listening on port 7777...");
-})
+connectDB()
+  .then(() => {
+    console.log("Database connection established successfully");
+    app.listen(7777, () => {
+      console.log("Serever is successfully listening on port 7777...");
+    });
+  })
+  .catch((err) => {
+    console.error("Database is unable to connect!!!");
+  });
