@@ -55,14 +55,21 @@ app.get("/feed" ,async(req,res)=>{
     }
     })
 
-    app.patch("/user" ,async(req,res)=>{
-      const userId = req.body.userId;
+    app.patch("/user/:userId" ,async(req,res)=>{
+      const userId = req.params?.userId;
       const data = req.body;
       try{
+      const ALLOWED_UPDATES = ["about","gender","skills","age"];
+      const isUpdateAllowed = Object.keys(data).every((k)=>{
+        ALLOWED_UPDATES.includes(k);
+      })
+      if(!isUpdateAllowed){
+        throw new Error("Update not allowed");
+      }
       const user = await User.findByIdAndUpdate(userId,data,{runValidators:true});
       res.send("User has been updated successfully");
       }catch(err){
-        res.status(404).send("Something went wrong");
+        res.status(404).send("UPDATE FAILED: "+err.message);
       }
       })
 
