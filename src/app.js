@@ -4,8 +4,12 @@ const app = express();
 const User  = require("./models/user");
 const {validateSignupData} = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const {userAuth} = require("./middlewares/auth");
 
 app.use(express.json());
+app.use(cookieParser);
 
 app.post("/signup", async (req, res, next) => {
   try {
@@ -28,63 +32,6 @@ app.post("/signup", async (req, res, next) => {
   }
 });
 
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailId;
-  try {
-    const users = await User.find({ emailId: userEmail });
-    if (users.length === 0) {
-      res.status(404).send("User not found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.status(404).send("Something went wrong");
-  }
-});
-
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    if (users.length === 0) {
-      res.status(404).send("User not found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.status(404).send("Something went wrong");
-  }
-});
-
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
-  try {
-    const user = await User.findByIdAndDelete(userId);
-    res.send("User has been deleted successfully");
-  } catch (err) {
-    res.status(404).send("Something went wrong");
-  }
-});
-
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-  try {
-    const ALLOWED_UPDATES = ["about", "gender", "skills", "age"];
-    const isUpdateAllowed = Object.keys(data).every((k) => {
-      ALLOWED_UPDATES.includes(k);
-    });
-    if (!isUpdateAllowed) {
-      throw new Error("Update not allowed");
-    }
-    const user = await User.findByIdAndUpdate(userId, data, {
-      runValidators: true,
-    });
-    res.send("User has been updated successfully");
-  } catch (err) {
-    res.status(404).send("UPDATE FAILED: " + err.message);
-  }
-});
-
 app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
@@ -92,8 +39,12 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid Creds");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
+      // create the JWT token
+      const token = await user.getJWT();
+      // add the token to the cookie and send the response back to the user
+      res.send("token",token);
       res.send("Login Successful");
     } else {
       throw new Error("Invalid Creds");
@@ -102,6 +53,15 @@ app.post("/login", async (req, res) => {
     res.status(400).send("ERROR: " + err.message);
   }
 });
+
+app.get("/profile", userAuth, async(req, res) => {
+  try{
+    const user = req.user;
+    res.send(user);
+  } catch(err){
+    res.status(400).send("ERROR : " + err.message);
+  }
+})
 
 connectDB()
   .then(() => {
