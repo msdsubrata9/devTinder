@@ -38,7 +38,7 @@ authRouter.post("/login", async (req, res) => {
       const token = await user.getJWT();
       // add the token to the cookie and send the response back to the user
       res.cookie("token", token);
-      res.send("Login Successful");
+      res.send(user);
     } else {
       throw new Error("Invalid Creds");
     }
@@ -47,11 +47,11 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-authRouter.post("/logout", async(req,res) =>{
-    res.cookie("token",null,{
-        expires:new Date(Date.now())
-    });
-    res.send("Logout Successful!!!");
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+  });
+  res.send("Logout Successful!!!");
 });
 
 module.exports = authRouter;
