@@ -54,6 +54,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "This is a default description of the user!",
     },
+    photoUrl: {
+      type: String,
+      default:
+        "https://res.cloudinary.com/demo/image/upload/d_avatar.png/non_existing_id.png",
+    },
   },
   {
     timestamps: true,
