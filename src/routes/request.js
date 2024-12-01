@@ -65,7 +65,6 @@ requestRoute.post(
           .json({ message: "Connection request not found" });
       }
       connectionRequests.status = status;
-      console.log(connectionRequests);
       const data = await connectionRequests.save();
       res.status(200).json({ message: "connection request " + status, data });
     } catch (err) {
